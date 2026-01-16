@@ -1,6 +1,24 @@
-import { Resolver, Query, ObjectType, Field, Int, Mutation, Args, InputType } from "@nestjs/graphql";
+import { Resolver, Query, ObjectType, Field, Int, Mutation, Args, InputType, ResolveField, Parent } from "@nestjs/graphql";
 import { NotFoundException } from "@nestjs/common";
 import { MinLength } from "class-validator";
+
+// Definição do tipo Post (post do usuário) para o GraphQL
+@ObjectType()
+class Post {
+    @Field(() => Int)
+    id: number;
+
+    @MinLength(5, { message: 'Title must be at least 5 characters long' })
+    @Field()
+    title: string;
+
+    @MinLength(10, { message: 'Content must be at least 10 characters long' })
+    @Field()
+    content: string;
+
+    @Field(() => Int)
+    authorId: number;
+}
 
 // Definição do tipo User para o GraphQL
 @ObjectType()
@@ -37,7 +55,12 @@ export class UserResolver {
         { id: 1, name: 'John Doe' },
         { id: 2, name: 'Jane Smith' },
     ];
-    private nextId = 3;
+
+    private currentPosts: Post[] = [
+        { id: 1, title: 'First Post', content: 'This is the content of the first post.', authorId: 1 },
+        { id: 2, title: 'Second Post', content: 'This is the content of the second post.', authorId: 1 },
+        { id: 3, title: 'Third Post', content: 'This is the content of the third post.', authorId: 2 },
+    ];
 
     @Query(() => [User])
     listUsers(): User[] {
@@ -52,7 +75,7 @@ export class UserResolver {
 
     @Mutation(() => User)
     createUser(@Args('input') input: CreateUserInput): User {
-        const user: User = { id: this.nextId++, name: input.name };
+        const user: User = { id: this.users.length + 1, name: input.name };
         this.users.push(user);
         return user;
     }
@@ -71,5 +94,10 @@ export class UserResolver {
         if (idx === -1) throw new NotFoundException(`User with id ${id} not found`);
         this.users.splice(idx, 1);
         return true;
+    }
+
+    @ResolveField(() => [Post])
+    posts(@Parent() user: User, @Args('limit', { type: () => Int, nullable: true }) limit?: number) {
+        return this.currentPosts.filter(p => p.authorId === user.id).slice(0, limit);
     }
 }
