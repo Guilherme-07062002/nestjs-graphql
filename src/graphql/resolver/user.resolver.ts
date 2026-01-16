@@ -1,5 +1,6 @@
 import { Resolver, Query, ObjectType, Field, Int, Mutation, Args, InputType } from "@nestjs/graphql";
 import { NotFoundException } from "@nestjs/common";
+import { MinLength } from "class-validator";
 
 // Definição do tipo User para o GraphQL
 @ObjectType()
@@ -7,12 +8,14 @@ class User {
     @Field(() => Int)
     id: number;
 
+    @MinLength(3, { message: 'Name must be at least 3 characters long' })
     @Field()
     name: string;
 }
 
 @InputType()
 class CreateUserInput {
+    @MinLength(3, { message: 'Name must be at least 3 characters long' })
     @Field()
     name: string;
 }
@@ -23,6 +26,7 @@ class UpdateUserInput {
     id: number;
 
     @Field()
+    @MinLength(3, { message: 'Name must be at least 3 characters long' })
     name: string;
 }
 
@@ -42,7 +46,8 @@ export class UserResolver {
 
     @Query(() => User, { nullable: true })
     getUser(@Args('id', { type: () => Int }) id: number): User | null {
-        return this.users.find(user => user.id === id) || null;
+        const user = this.users.find(user => user.id === id) || null;
+        return user;
     }
 
     @Mutation(() => User)
