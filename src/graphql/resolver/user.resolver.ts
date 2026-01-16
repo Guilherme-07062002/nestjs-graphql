@@ -49,6 +49,15 @@ class UpdateUserInput {
     name: string;
 }
 
+@InputType()
+class PaginationArgs {
+    @Field(() => Int, { defaultValue: 0 })
+    skip: number;
+
+    @Field(() => Int, { defaultValue: 10 })
+    take: number;
+}
+
 // Um resolver é um conjunto de queries, mutations e subscriptions que tratam de um determinado tipo ou funcionalidade
 @Resolver(() => User)
 export class UserResolver {
@@ -59,6 +68,9 @@ export class UserResolver {
     private users: User[] = [
         { id: 1, name: 'John Doe' },
         { id: 2, name: 'Jane Smith' },
+        { id: 3, name: 'Alice Johnson' },
+        { id: 4, name: 'Bob Brown' },
+        { id: 5, name: 'Charlie Davis' },
     ];
 
     private currentPosts: Post[] = [
@@ -68,8 +80,9 @@ export class UserResolver {
     ];
 
     @Query(() => [User])
-    listUsers(): User[] {
-        return this.users;
+    listUsers(@Args('pagination', { nullable: true }) pagination?: PaginationArgs): User[] {
+        const { skip = 0, take = 10 } = pagination || {};
+        return this.users.slice(skip, skip + take);
     }
 
     @Query(() => User, { nullable: true })
