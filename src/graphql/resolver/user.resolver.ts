@@ -19,6 +19,9 @@ class Post {
 
     @Field(() => Int)
     authorId: number;
+
+    @Field(() => Date, { nullable: true })
+    createdAt: Date;
 }
 
 // Definição do tipo User para o GraphQL
@@ -74,9 +77,9 @@ export class UserResolver {
     ];
 
     private currentPosts: Post[] = [
-        { id: 1, title: 'First Post', content: 'This is the content of the first post.', authorId: 1 },
-        { id: 2, title: 'Second Post', content: 'This is the content of the second post.', authorId: 1 },
-        { id: 3, title: 'Third Post', content: 'This is the content of the third post.', authorId: 2 },
+        { id: 1, title: 'First Post', content: 'This is the content of the first post.', authorId: 1, createdAt: new Date() },
+        { id: 2, title: 'Second Post', content: 'This is the content of the second post.', authorId: 1, createdAt: new Date() },
+        { id: 3, title: 'Third Post', content: 'This is the content of the third post.', authorId: 2, createdAt: new Date() }
     ];
 
     @Query(() => [User])

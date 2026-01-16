@@ -3,6 +3,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserResolver } from './graphql/resolver/user.resolver';
 import { PubSub } from 'graphql-subscriptions';
+import { DateScalar } from './graphql/common/scalars/date.scalar';
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { PubSub } from 'graphql-subscriptions';
       autoSchemaFile: true,
     }),
   ],
-  providers: [UserResolver, PubSub],
+  providers: [UserResolver, PubSub, DateScalar],
 })
 export class AppModule {}
