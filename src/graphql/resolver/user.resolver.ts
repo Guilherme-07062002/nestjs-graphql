@@ -1,6 +1,7 @@
-import { Resolver, Query, ObjectType, Field, Int, Mutation, Args, InputType, ResolveField, Parent } from "@nestjs/graphql";
+import { Resolver, Query, ObjectType, Field, Int, Mutation, Args, InputType, ResolveField, Parent, Subscription } from "@nestjs/graphql";
 import { NotFoundException } from "@nestjs/common";
 import { MinLength } from "class-validator";
+import { PubSub } from "graphql-subscriptions";
 
 // Definição do tipo Post (post do usuário) para o GraphQL
 @ObjectType()
@@ -51,6 +52,10 @@ class UpdateUserInput {
 // Um resolver é um conjunto de queries, mutations e subscriptions que tratam de um determinado tipo ou funcionalidade
 @Resolver(() => User)
 export class UserResolver {
+    constructor(
+        private readonly pubSub: PubSub
+    ) {}
+
     private users: User[] = [
         { id: 1, name: 'John Doe' },
         { id: 2, name: 'Jane Smith' },
@@ -77,7 +82,16 @@ export class UserResolver {
     createUser(@Args('input') input: CreateUserInput): User {
         const user: User = { id: this.users.length + 1, name: input.name };
         this.users.push(user);
+
+        this.pubSub.publish('userCreated', { userCreated: user });
         return user;
+    }
+
+    @Subscription(() => User, {
+        resolve: (value) => value.userCreated,
+    })
+    userCreated() {
+        return this.pubSub.asyncIterableIterator('userCreated');
     }
 
     @Mutation(() => User)
